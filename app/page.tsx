@@ -7,7 +7,7 @@ import TokenForm from '@/components/TokenForm'
 import OrderForm from '@/components/OrderForm'
 
 export default function Home() {
-  const { token } = useContext(AppContext)
+  const { token } = useContext(AppContext)!
   const router = useRouter()
 
   useEffect(() => {
