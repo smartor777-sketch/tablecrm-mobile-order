@@ -10,7 +10,7 @@ import type {
   ApiError,
 } from "./types";
 
-const API_BASE = "/api/v1";
+const API_BASE = "/api";
 
 async function fetchApi<T>(
   endpoint: string,
@@ -18,7 +18,7 @@ async function fetchApi<T>(
   options?: RequestInit
 ): Promise<T> {
   try {
-    const url = `${API_BASE}${endpoint}?token=${token}`;
+    const url = `${API_BASE}?endpoint=${endpoint}&token=${token}`;
     const response = await fetch(url, {
       ...options,
       headers: {
