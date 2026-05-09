@@ -148,6 +148,24 @@ export default function OrderForm() {
       return
     }
 
+    // require all params
+    if (!selectedPaybox) {
+      setCreateError('Выберите счёт')
+      return
+    }
+    if (!selectedOrganization) {
+      setCreateError('Выберите организацию')
+      return
+    }
+    if (!selectedWarehouse) {
+      setCreateError('Выберите склад')
+      return
+    }
+    if (!selectedPriceType) {
+      setCreateError('Выберите тип цены')
+      return
+    }
+
     setCreating(true)
     setCreateError('')
     setCreateSuccess(false)
@@ -155,10 +173,10 @@ export default function OrderForm() {
     try {
       const saleData = {
         contragent_id: contragent.id,
-        paybox_id: selectedPaybox?.id,
-        organization_id: selectedOrganization?.id,
-        warehouse_id: selectedWarehouse?.id,
-        price_type_id: selectedPriceType?.id,
+        paybox_id: selectedPaybox.id,
+        organization_id: selectedOrganization.id,
+        warehouse_id: selectedWarehouse.id,
+        price_type_id: selectedPriceType.id,
         comment: comment,
         items: cart.map((item: CartItem) => ({
           nomenclature_id: item.nomenclature.id,
