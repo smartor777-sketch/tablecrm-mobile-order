@@ -10,7 +10,7 @@ import type {
   ApiError,
 } from "./types";
 
-const API_BASE = "/api/v1";
+const API_BASE = "https://app.tablecrm.com/api/v1";
 
 async function fetchApi<T>(
   endpoint: string,
@@ -18,11 +18,11 @@ async function fetchApi<T>(
   options?: RequestInit
 ): Promise<T> {
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const url = `${API_BASE}${endpoint}?token=${token}`;
+    const response = await fetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
         ...options?.headers,
       },
     });
