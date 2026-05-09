@@ -37,9 +37,9 @@ async function fetchApi<T>(
 
     return response.json();
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Oshibka soyedineniya";
+    const msg = err instanceof Error ? err.message : "Error";
     if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
-      throw new Error("Ne udalos podklyuchitsya k TableCRM. Proverte internet.");
+      throw new Error("CORS error! Try another method.");
     }
     throw err;
   }
