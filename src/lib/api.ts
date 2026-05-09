@@ -10,7 +10,7 @@ import type {
   ApiError,
 } from "./types";
 
-const API_BASE = "https://app.tablecrm.com/api/v1";
+const API_BASE = "/api/v1";
 
 async function fetchApi<T>(
   endpoint: string,
