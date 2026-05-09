@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
+      redirect: 'follow',
     })
 
     if (!response.ok) {
