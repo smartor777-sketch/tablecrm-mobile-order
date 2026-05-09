@@ -1,15 +1,23 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Rubik, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { AppProvider } from '@/context/AppContext'
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'] })
+const rubik = Rubik({ 
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-rubik',
+})
+
+const jetbrainsMono = JetBrains_Mono({ 
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+})
 
 export const metadata: Metadata = {
-  title: 'TableCRM - Мобильное оформление заказа',
-  description: 'Мобильная форма оформления заказа для TableCRM',
+  title: 'TableCRM Mobile Order',
+  description: 'Мобильная форма оформления заказов для tablecrm.com',
   manifest: '/manifest.json',
-  themeColor: '#2563eb',
+  themeColor: '#ffffff',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
 }
 
@@ -20,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className={inter.className}>
+      <body className={`${rubik.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <AppProvider>
           {children}
         </AppProvider>
@@ -28,4 +36,3 @@ export default function RootLayout({
     </html>
   )
 }
-

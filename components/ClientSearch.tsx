@@ -3,6 +3,7 @@
 import { useState, useContext, useEffect, useRef } from 'react'
 import { AppContext } from '@/context/AppContext'
 import { searchContragentsByPhone } from '@/services/api'
+import { Phone, Search } from 'lucide-react'
 
 export default function ClientSearch() {
   const { token, contragent, setContragent } = useContext(AppContext)!
@@ -59,24 +60,20 @@ export default function ClientSearch() {
   const handlePhoneChange = (value: string) => {
     setPhone(value)
     
-    // Сбрасываем выбранного клиента при изменении телефона
     if (contragent) {
       setContragent(null)
     }
 
-    // Очищаем предыдущий таймер
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current)
     }
 
-    // Если поле пустое, очищаем результаты
     if (!value.trim()) {
       setResults([])
       setError('')
       return
     }
 
-    // Устанавливаем новый таймер для debounce (500ms)
     debounceTimer.current = setTimeout(() => {
       if (value.trim().length >= 3) {
         performSearch(value)
@@ -87,7 +84,6 @@ export default function ClientSearch() {
     }, 500)
   }
 
-  // Очистка таймера при размонтировании
   useEffect(() => {
     return () => {
       if (debounceTimer.current) {
@@ -103,93 +99,70 @@ export default function ClientSearch() {
     setError('')
   }
 
-
   return (
-    <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">
-        Клиент
-      </label>
+    <div className="rounded-xl border border-border/70 bg-card/95 p-4 shadow-sm">
+      <div className="font-medium text-base mb-3 flex items-center gap-2">
+        <Phone className="size-4" />
+        2. Клиент
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">Поиск клиента по телефону</p>
       
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
           <input
             type="tel"
+            id="clientPhone"
             value={phone}
             onChange={(e) => handlePhoneChange(e.target.value)}
-            placeholder="Введите телефон (минимум 3 символа)"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="+79990000000"
+            className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
           />
-          {loading && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={handleSearch}
-          disabled={loading || !phone.trim()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? '...' : 'Найти'}
-        </button>
-      </div>
-
-      {error && (
-        <div className="text-red-600 text-sm">{error}</div>
-      )}
-
-      {results.length > 0 && (
-        <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto shadow-sm">
-          <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
-            Найдено: {results.length}
-          </div>
-          {results.map((client) => (
-            <button
-              key={client.id}
-              type="button"
-              onClick={() => handleSelectClient(client)}
-              className="w-full text-left px-4 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition-colors"
-            >
-              <div className="font-medium text-gray-900">{client.name}</div>
-              {client.phone && (
-                <div className="text-sm text-gray-500">{client.phone}</div>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {phone.trim().length > 0 && phone.trim().length < 3 && !loading && (
-        <div className="text-gray-500 text-sm">
-          Введите минимум 3 символа для поиска
-        </div>
-      )}
-
-      {contragent && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="font-medium text-blue-900">Выбран: {contragent.name}</div>
-          {contragent.phone && (
-            <div className="text-sm text-blue-700">{contragent.phone}</div>
-          )}
           <button
             type="button"
-            onClick={() => {
-              setContragent(null)
-              setPhone('')
-              setResults([])
-            }}
-            className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+            onClick={handleSearch}
+            disabled={loading || !phone.trim()}
+            className="shrink-0 inline-flex items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-8 gap-1.5 px-2.5"
           >
-            Изменить
+            <Search className="size-4" />
           </button>
         </div>
-      )}
+
+        {error && (
+          <div className="text-destructive text-sm">{error}</div>
+        )}
+
+        {results.length > 0 && (
+          <div className="border border-border rounded-lg max-h-48 overflow-y-auto">
+            {results.map((client) => (
+              <button
+                key={client.id}
+                type="button"
+                onClick={() => handleSelectClient(client)}
+                className="w-full text-left px-4 py-2 hover:bg-accent border-b border-border last:border-b-0"
+              >
+                <div className="font-medium">{client.name}</div>
+                {client.phone && (
+                  <div className="text-sm text-muted-foreground">{client.phone}</div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <label className="flex items-center gap-2 text-sm leading-none font-medium select-none">
+          Найденный клиент
+        </label>
+        <button
+          type="button"
+          disabled
+          className="flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-muted-foreground data-[size=default]:h-8 w-full"
+        >
+          <span className="flex flex-1 text-left">
+            {contragent ? contragent.name : 'Клиент не выбран'}
+          </span>
+          <Search className="size-4 text-muted-foreground pointer-events-none" />
+        </button>
+      </div>
     </div>
   )
 }
-

@@ -6,6 +6,13 @@ import { getPayboxes, getOrganizations, getWarehouses, getPriceTypes, createSale
 import ClientSearch from './ClientSearch'
 import SelectField from './SelectField'
 import ProductSelector from './ProductSelector'
+import { PlugZap, Phone, PackagePlus, ShoppingCart, CheckCircle, ChevronDown, Search } from 'lucide-react'
+
+interface CartItem {
+  nomenclature: any
+  quantity: number
+  price: number
+}
 
 export default function OrderForm() {
   const {
@@ -27,6 +34,7 @@ export default function OrderForm() {
   const [organizations, setOrganizations] = useState<any[]>([])
   const [warehouses, setWarehouses] = useState<any[]>([])
   const [priceTypes, setPriceTypes] = useState<any[]>([])
+  const [comment, setComment] = useState('')
   
   const [loadingPayboxes, setLoadingPayboxes] = useState(false)
   const [loadingOrganizations, setLoadingOrganizations] = useState(false)
@@ -36,6 +44,8 @@ export default function OrderForm() {
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
   const [createSuccess, setCreateSuccess] = useState(false)
+
+  const total = cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0)
 
   useEffect(() => {
     if (token) {
@@ -52,17 +62,13 @@ export default function OrderForm() {
     try {
       const response = await getPayboxes(token)
       if (response.error) {
-        console.error('Ошибка загрузки счетов:', response.error)
         setPayboxes([])
       } else if (response.data) {
-        console.log('Загружено счетов:', response.data.length)
         setPayboxes(response.data)
       } else {
-        console.warn('Счета не загружены, ответ:', response)
         setPayboxes([])
       }
     } catch (err) {
-      console.error('Ошибка загрузки счетов:', err)
       setPayboxes([])
     } finally {
       setLoadingPayboxes(false)
@@ -75,17 +81,13 @@ export default function OrderForm() {
     try {
       const response = await getOrganizations(token)
       if (response.error) {
-        console.error('Ошибка загрузки организаций:', response.error)
         setOrganizations([])
       } else if (response.data) {
-        console.log('Загружено организаций:', response.data.length)
         setOrganizations(response.data)
       } else {
-        console.warn('Организации не загружены, ответ:', response)
         setOrganizations([])
       }
     } catch (err) {
-      console.error('Ошибка загрузки организаций:', err)
       setOrganizations([])
     } finally {
       setLoadingOrganizations(false)
@@ -98,17 +100,13 @@ export default function OrderForm() {
     try {
       const response = await getWarehouses(token)
       if (response.error) {
-        console.error('Ошибка загрузки складов:', response.error)
         setWarehouses([])
       } else if (response.data) {
-        console.log('Загружено складов:', response.data.length)
         setWarehouses(response.data)
       } else {
-        console.warn('Склады не загружены, ответ:', response)
         setWarehouses([])
       }
     } catch (err) {
-      console.error('Ошибка загрузки складов:', err)
       setWarehouses([])
     } finally {
       setLoadingWarehouses(false)
@@ -121,17 +119,13 @@ export default function OrderForm() {
     try {
       const response = await getPriceTypes(token)
       if (response.error) {
-        console.error('Ошибка загрузки типов цен:', response.error)
         setPriceTypes([])
       } else if (response.data) {
-        console.log('Загружено типов цен:', response.data.length)
         setPriceTypes(response.data)
       } else {
-        console.warn('Типы цен не загружены, ответ:', response)
         setPriceTypes([])
       }
     } catch (err) {
-      console.error('Ошибка загрузки типов цен:', err)
       setPriceTypes([])
     } finally {
       setLoadingPriceTypes(false)
@@ -159,14 +153,14 @@ export default function OrderForm() {
     setCreateSuccess(false)
 
     try {
-      // Формируем payload для создания продажи
       const saleData = {
         contragent_id: contragent.id,
         paybox_id: selectedPaybox?.id,
         organization_id: selectedOrganization?.id,
         warehouse_id: selectedWarehouse?.id,
         price_type_id: selectedPriceType?.id,
-        items: cart.map(item => ({
+        comment: comment,
+        items: cart.map((item: CartItem) => ({
           nomenclature_id: item.nomenclature.id,
           quantity: item.quantity,
           price: item.price,
@@ -180,7 +174,7 @@ export default function OrderForm() {
       } else {
         setCreateSuccess(true)
         clearCart()
-        // Можно добавить сброс других полей
+        setComment('')
         setTimeout(() => {
           setCreateSuccess(false)
         }, 3000)
@@ -193,66 +187,7 @@ export default function OrderForm() {
   }
 
   return (
-    <div className="p-4 space-y-6 pb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Оформление заказа</h1>
-        <button
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('tablecrm_token')
-              window.location.reload()
-            }
-          }}
-          className="text-sm text-gray-600 hover:text-gray-800"
-        >
-          Выйти
-        </button>
-      </div>
-
-      <ClientSearch />
-
-      <SelectField
-        label={`Счет ${payboxes.length > 0 ? `(${payboxes.length})` : ''}`}
-        value={selectedPaybox}
-        onChange={setSelectedPaybox}
-        options={payboxes}
-        loading={loadingPayboxes}
-        getOptionLabel={(opt) => opt.name || opt.title || `Счет #${opt.id}`}
-        getOptionValue={(opt) => opt.id}
-      />
-
-      <SelectField
-        label={`Организация ${organizations.length > 0 ? `(${organizations.length})` : ''}`}
-        value={selectedOrganization}
-        onChange={setSelectedOrganization}
-        options={organizations}
-        loading={loadingOrganizations}
-        getOptionLabel={(opt) => opt.name || opt.title || `Организация #${opt.id}`}
-        getOptionValue={(opt) => opt.id}
-      />
-
-      <SelectField
-        label={`Склад ${warehouses.length > 0 ? `(${warehouses.length})` : ''}`}
-        value={selectedWarehouse}
-        onChange={setSelectedWarehouse}
-        options={warehouses}
-        loading={loadingWarehouses}
-        getOptionLabel={(opt) => opt.name || opt.title || `Склад #${opt.id}`}
-        getOptionValue={(opt) => opt.id}
-      />
-
-      <SelectField
-        label={`Тип цены ${priceTypes.length > 0 ? `(${priceTypes.length})` : ''}`}
-        value={selectedPriceType}
-        onChange={setSelectedPriceType}
-        options={priceTypes}
-        loading={loadingPriceTypes}
-        getOptionLabel={(opt) => opt.name || opt.title || `Тип цены #${opt.id}`}
-        getOptionValue={(opt) => opt.id}
-      />
-
-      <ProductSelector />
-
+    <div className="space-y-4">
       {createError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
           {createError}
@@ -265,23 +200,121 @@ export default function OrderForm() {
         </div>
       )}
 
-      <div className="space-y-2 pt-4">
-        <button
-          onClick={() => handleCreateSale(false)}
-          disabled={creating}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {creating ? 'Создание...' : 'Создать продажу'}
-        </button>
-        <button
-          onClick={() => handleCreateSale(true)}
-          disabled={creating}
-          className="w-full bg-blue-700 text-white py-3 rounded-lg font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {creating ? 'Создание...' : 'Создать и провести'}
-        </button>
+      <ClientSearch />
+
+      <div className="rounded-xl border border-border/70 bg-card/95 p-4 shadow-sm">
+        <div className="font-medium text-base mb-3">3. Параметры продажи</div>
+        <p className="text-sm text-muted-foreground mb-4">Счёт, организация, склад и тип цены</p>
+        
+        <div className="space-y-3">
+          <SelectField
+            label="Организация"
+            value={selectedOrganization}
+            onChange={setSelectedOrganization}
+            options={organizations}
+            loading={loadingOrganizations}
+            getOptionLabel={(opt) => opt.name || opt.title || `Организация #${opt.id}`}
+            getOptionValue={(opt) => opt.id}
+          />
+
+          <SelectField
+            label="Счёт"
+            value={selectedPaybox}
+            onChange={setSelectedPaybox}
+            options={payboxes}
+            loading={loadingPayboxes}
+            getOptionLabel={(opt) => opt.name || opt.title || `Счёт #${opt.id}`}
+            getOptionValue={(opt) => opt.id}
+          />
+
+          <SelectField
+            label="Склад"
+            value={selectedWarehouse}
+            onChange={setSelectedWarehouse}
+            options={warehouses}
+            loading={loadingWarehouses}
+            getOptionLabel={(opt) => opt.name || opt.title || `Склад #${opt.id}`}
+            getOptionValue={(opt) => opt.id}
+          />
+
+          <SelectField
+            label="Тип цены"
+            value={selectedPriceType}
+            onChange={setSelectedPriceType}
+            options={priceTypes}
+            loading={loadingPriceTypes}
+            getOptionLabel={(opt) => opt.name || opt.title || `Тип цены #${opt.id}`}
+            getOptionValue={(opt) => opt.id}
+          />
+        </div>
       </div>
+
+      <ProductSelector />
+
+      <div className="rounded-xl border border-border/70 bg-card/95 p-4 shadow-sm">
+        <div className="font-medium text-base mb-3 flex items-center gap-2">
+          <ShoppingCart className="size-4" />
+          Корзина
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">Количество, цена и сумма по позициям</p>
+        
+        <div className="space-y-2">
+          {cart.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Добавьте хотя бы один товар</p>
+          ) : (
+            cart.map((item: CartItem, index: number) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-secondary/30 rounded-lg">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{item.nomenclature.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.quantity} × {item.price.toFixed(2)} ₽
+                  </p>
+                </div>
+                <p className="text-sm font-medium ml-2">
+                  {(item.price * item.quantity).toFixed(2)} ₽
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border/70 bg-card/95 p-4 shadow-sm">
+        <div className="font-medium text-base mb-3">Комментарий</div>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Комментарий к заказу (необязательно)"
+          className="flex field-sizing-content min-h-16 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+          rows={3}
+        />
+      </div>
+
+      <footer className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 backdrop-blur">
+        <div className="mx-auto w-full max-w-md px-3 py-3">
+          <div className="mb-3 flex items-center justify-between rounded-xl border bg-card px-3 py-2">
+            <p className="text-sm text-muted-foreground">Итого</p>
+            <p className="text-lg font-semibold">{total.toFixed(2)} ₽</p>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <button
+              onClick={() => handleCreateSale(false)}
+              disabled={creating}
+              className="w-full bg-primary text-primary-foreground h-8 px-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {creating ? 'Создание...' : 'Создать продажу'}
+            </button>
+            <button
+              onClick={() => handleCreateSale(true)}
+              disabled={creating}
+              className="w-full bg-secondary text-secondary-foreground h-8 px-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <CheckCircle className="size-4 mr-2" />
+              Создать и провести
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
-

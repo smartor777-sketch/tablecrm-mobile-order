@@ -3,6 +3,7 @@
 import { useState, useContext, useEffect } from 'react'
 import { AppContext } from '@/context/AppContext'
 import { getNomenclature } from '@/services/api'
+import { PackagePlus, Search } from 'lucide-react'
 
 export default function ProductSelector() {
   const { token, selectedPriceType, cart, addToCart, updateCartItem, removeFromCart } = useContext(AppContext)!
@@ -39,7 +40,6 @@ export default function ProductSelector() {
     }
   }
 
-  // Фильтрация только при непустой строке поиска
   const filteredProducts = searchQuery.trim()
     ? products.filter((p) =>
         p.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -47,7 +47,6 @@ export default function ProductSelector() {
     : []
 
   const getProductPrice = (product: any) => {
-    // Здесь можно добавить логику получения цены в зависимости от selectedPriceType
     return product.price || product.price_sale || 0
   }
 
@@ -57,132 +56,109 @@ export default function ProductSelector() {
     const price = getProductPrice(selectedProduct)
     addToCart(selectedProduct, quantity, price)
 
-    // После добавления в корзину скрываем выбор:
-    // очищаем выбранный товар и строку поиска,
-    // список товаров тоже скрывается, так как searchQuery пустой
     setSelectedProduct(null)
     setQuantity(1)
     setSearchQuery('')
   }
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Товары
-        </label>
-        
+    <div className="rounded-xl border border-border/70 bg-card/95 p-4 shadow-sm">
+      <div className="font-medium text-base mb-3 flex items-center gap-2">
+        <PackagePlus className="size-4" />
+        4. Товары
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">Поиск и добавление номенклатуры</p>
+      
+      <div className="space-y-3">
         <input
           type="text"
+          id="productSearch"
           value={searchQuery}
           onChange={(e) => {
             const value = e.target.value
             setSearchQuery(value)
-            // Если строка поиска стала пустой — скрываем выбранный товар
             if (!value.trim()) {
               setSelectedProduct(null)
             }
           }}
-          placeholder="Поиск товаров..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          placeholder="Поиск товара по названию"
+          className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive md:text-sm"
         />
-      </div>
 
-      {loading && (
-        <div className="text-center py-4 text-gray-500">Загрузка товаров...</div>
-      )}
+        {loading && (
+          <div className="text-center py-4 text-muted-foreground">Загрузка...</div>
+        )}
 
-      {error && (
-        <div className="text-red-600 text-sm">{error}</div>
-      )}
+        {error && (
+          <div className="text-destructive text-sm">{error}</div>
+        )}
 
-      {/* Список товаров показываем только если есть непустой поиск и результаты */}
-      {!loading && searchQuery.trim() && filteredProducts.length > 0 && (
-        <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
-          {filteredProducts.map((product) => (
-            <button
-              key={product.id}
-              type="button"
-              onClick={() => setSelectedProduct(product)}
-              className={`w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
-                selectedProduct?.id === product.id ? 'bg-blue-50' : ''
-              }`}
-            >
-              <div className="font-medium">{product.name}</div>
-              <div className="text-sm text-gray-500">
-                Цена: {getProductPrice(product).toLocaleString('ru-RU')} ₽
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {selectedProduct && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-          <div>
-            <div className="font-medium text-blue-900">{selectedProduct.name}</div>
-            <div className="text-sm text-blue-700">
-              Цена: {getProductPrice(selectedProduct).toLocaleString('ru-RU')} ₽
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-700">Количество:</label>
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            />
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            >
-              Добавить
-            </button>
-          </div>
-        </div>
-      )}
-
-      {cart.length > 0 && (
-        <div className="border border-gray-200 rounded-lg p-4 space-y-2">
-          <div className="font-medium text-gray-700 mb-2">Корзина</div>
-          {cart.map((item) => (
-            <div key={item.nomenclature.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-              <div className="flex-1">
-                <div className="font-medium text-sm">{item.nomenclature.name}</div>
-                <div className="text-xs text-gray-500">
-                  {item.price.toLocaleString('ru-RU')} ₽ × {item.quantity}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => updateCartItem(item.nomenclature.id, Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                />
+        {!loading && searchQuery.trim() && filteredProducts.length > 0 && (
+          <div className="relative h-56 rounded-xl border">
+            <div className="size-full rounded-[inherit] overflow-y-auto p-2 space-y-1">
+              {filteredProducts.slice(0, 20).map((product) => (
                 <button
+                  key={product.id}
                   type="button"
-                  onClick={() => removeFromCart(item.nomenclature.id)}
-                  className="text-red-600 hover:text-red-800 text-sm"
+                  onClick={() => setSelectedProduct(product)}
+                  className={`w-full text-left px-2 py-2 hover:bg-accent rounded-md ${
+                    selectedProduct?.id === product.id ? 'bg-accent' : ''
+                  }`}
                 >
-                  Удалить
+                  <div className="font-medium text-sm">{product.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {getProductPrice(product).toFixed(2)} ₽
+                  </div>
                 </button>
+              ))}
+              {filteredProducts.length > 20 && (
+                <div className="text-center py-2 text-muted-foreground text-sm">
+                  Показано 20 из {filteredProducts.length}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!searchQuery.trim() && !loading && products.length > 0 && (
+          <div className="relative h-56 rounded-xl border">
+            <div className="size-full rounded-[inherit] overflow-y-auto p-2 space-y-1">
+              <p className="px-2 py-4 text-sm text-muted-foreground text-center">
+                Введите название товара для поиска
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedProduct && (
+          <div className="bg-secondary/30 rounded-lg p-3 space-y-3">
+            <div>
+              <div className="font-medium">{selectedProduct.name}</div>
+              <div className="text-sm text-muted-foreground">
+                {getProductPrice(selectedProduct).toFixed(2)} ₽
               </div>
             </div>
-          ))}
-          <div className="pt-2 border-t border-gray-200 font-medium text-lg">
-            Итого: {cartTotal.toLocaleString('ru-RU')} ₽
+            
+            <div className="flex items-center gap-3">
+              <label className="text-sm">Количество:</label>
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 py-1 text-center transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              />
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="flex-1 bg-primary text-primary-foreground h-8 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Добавить
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
-

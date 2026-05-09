@@ -1,20 +1,16 @@
 'use client'
 
 import { useContext, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { AppContext } from '@/context/AppContext'
 import TokenForm from '@/components/TokenForm'
 import OrderForm from '@/components/OrderForm'
 
 export default function Home() {
   const { token } = useContext(AppContext)!
-  const router = useRouter()
 
   useEffect(() => {
-    // Проверяем наличие токена в localStorage при загрузке
     const savedToken = localStorage.getItem('tablecrm_token')
     if (savedToken && !token) {
-      // Токен будет восстановлен через Context
     }
   }, [token])
 
@@ -32,8 +28,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-md mx-auto bg-white min-h-screen">
+    <main className="min-h-screen bg-[radial-gradient(1200px_400px_at_50%_-50%,rgba(249,115,22,0.26),transparent),radial-gradient(1100px_300px_at_90%_120%,rgba(20,184,166,0.2),transparent)]">
+      <div className="mx-auto w-full max-w-md px-3 pb-44 pt-4">
         <OrderForm />
       </div>
     </main>
