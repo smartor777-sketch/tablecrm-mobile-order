@@ -15,9 +15,11 @@ export default function Home() {
     }
   }, [token])
 
+  const gradientBg = "min-h-dvh bg-[radial-gradient(1200px_400px_at_50%_-50%,rgba(249,115,22,0.26),transparent),radial-gradient(1100px_300px_at_90%_120%,rgba(20,184,166,0.2),transparent)]"
+
   if (!token) {
     return (
-      <div className="min-h-dvh">
+      <div className={gradientBg}>
         <div className="mx-auto w-full max-w-md px-3 pb-44 pt-4">
           <TokenForm />
         </div>
@@ -26,7 +28,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-dvh">
+    <div className={gradientBg}>
       <div className="mx-auto w-full max-w-md px-3 pb-44 pt-4">
         <div className="mb-4 rounded-3xl border border-border/70 bg-card/95 p-4 shadow-sm backdrop-blur">
           <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">tablecrm.com</p>
