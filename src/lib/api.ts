@@ -10,7 +10,7 @@ import type {
   ApiError,
 } from "./types";
 
-const API_BASE = "/api";
+const CORS_PROXY = "https://corsproxy.io/?";
 
 async function fetchApi<T>(
   endpoint: string,
@@ -18,8 +18,8 @@ async function fetchApi<T>(
   options?: RequestInit
 ): Promise<T> {
   try {
-    const url = `${API_BASE}?endpoint=${endpoint}&token=${token}`;
-    const response = await fetch(url, {
+    const url = `https://app.tablecrm.com/api/v1/${endpoint}?token=${token}`;
+    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(url)}`, {
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -37,60 +37,10 @@ async function fetchApi<T>(
 
     return response.json();
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Ошибка соединения";
+    const msg = err instanceof Error ? err.message : "Oshibka soyedineniya";
     if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
-      throw new Error("Не удалось连接到TableCRM. Проверьте интернет или CORS.");
+      throw new Error("Ne udalos podklyuchitsya k TableCRM. Proverte internet.");
     }
     throw err;
   }
-}
-
-export async function fetchContragents(token: string): Promise<Contragent[]> {
-  return fetchApi<Contragent[]>("/contragents", token);
-}
-
-export async function searchClientByPhone(
-  token: string,
-  phone: string
-): Promise<Contragent | null> {
-  const clients = await fetchApi<Contragent[]>(
-    `/contragents?phone=${encodeURIComponent(phone)}`,
-    token
-  );
-  return clients[0] || null;
-}
-
-export async function fetchOrganizations(
-  token: string
-): Promise<Organization[]> {
-  return fetchApi<Organization[]>("/organizations", token);
-}
-
-export async function fetchWarehouses(token: string): Promise<Warehouse[]> {
-  return fetchApi<Warehouse[]>("/warehouses", token);
-}
-
-export async function fetchPayboxes(token: string): Promise<Paybox[]> {
-  return fetchApi<Paybox[]>("/payboxes", token);
-}
-
-export async function fetchPriceTypes(token: string): Promise<PriceType[]> {
-  return fetchApi<PriceType[]>("/price_types", token);
-}
-
-export async function fetchNomenclature(
-  token: string
-): Promise<Nomenclature[]> {
-  return fetchApi<Nomenclature[]>("/nomenclature", token);
-}
-
-export async function createSale(
-  token: string,
-  payload: Omit<SalePayload, "token">,
-  status: "draft" | "committed"
-): Promise<SaleDocument> {
-  return fetchApi<SaleDocument>("/docs_sales", token, {
-    method: "POST",
-    body: JSON.stringify({ ...payload, token, status }),
-  });
 }
