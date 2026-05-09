@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/v1/:path*", "destination": "https://app.tablecrm.com/api/v1/:path*" }
+  ]
+}
